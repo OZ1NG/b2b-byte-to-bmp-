@@ -253,11 +253,11 @@ class BmpGrayScale:
         self.debug_print("init_width : ",width)
         return height, width
 
-    def make(self, file_data, bmp_file_name="result.bmp", path="./", result_output_path="./", resize_output_path="./"):
+    # block_side : 블록의 한 변의 길이
+    def make(self, file_data, bmp_file_name="result.bmp", path="./", result_output_path="./", resize_output_path="./", block_side=5):
         file_size = len(file_data) 
         height, width = self.getHeightWidth(file_size)
-        block_side = 5 # default
-        # 값 체크 : 만약 block_size 값보다 더 작은 경우 더 작은 값으로 block_side 설정
+        # 값 체크 : 만약 block_side 값보다 더 작은 경우 더 작은 값으로 block_side 설정
         if (height < block_side) or (width < block_side):
             if (width < height):
                 block_side = width
