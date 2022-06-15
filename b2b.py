@@ -26,14 +26,13 @@ class Bmp:
             exit(0)
 
 if __name__ == "__main__":
-    path = "../It's_mine_My_precious/train_1"
+    path = "../It's_mine_My_precious/test_0"
     bmp = Bmp(PATH=path)
     bmp.get_files_path(PATH=path)
     count = 0
     for f in bmp.EXE_FILES:
-        #print(f)
-        file_data = open(path+'/'+f, 'rb').read()
-        bmp.bmp24.make(file_data, bmp_file_name=f,output_path="./bi_train_1")
-        print(" [%d/%d] Running... %s" %(count ,len(bmp.EXE_FILES), f), end='\r')
         count += 1
+        print(" [%d/%d] Running... %s" %(count ,len(bmp.EXE_FILES), f), end='\r')
+        file_data = open(path+'/'+f, 'rb').read()
+        bmp.bmp24.make(file_data, bmp_file_name=f,output_path="./bi_test_0")
     print("\n[+] Done")
