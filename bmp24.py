@@ -4,27 +4,6 @@ import struct
 import numpy as np
 from PIL import Image
 
-def padding(index, length): # for test
-    index = hex(index)[2:]
-    return '0'*(length-len(index)) + index
-
-def print_hex(data): # for test
-    tmp = ''
-    idx = 0
-    print(" " * 9, "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F\n")
-    for i,v in enumerate(data):
-        if (i % 0x10) == 0:
-            if (len(tmp) != 0):
-                print(padding(idx, 8)+' ', tmp)
-                tmp = ''
-                idx += 0x10
-        char_tmp = hex(v)[2:]
-        if (len(char_tmp) < 2):
-            tmp += '0'+hex(v)[2:]+' '
-        else:
-            tmp += hex(v)[2:]+' '
-    print(padding(idx, 8)+' ', tmp+"\n")
-
 DEBUG = False
 def debug_print(*msg):
     if(DEBUG):
@@ -80,15 +59,14 @@ class Bmp24:
     def set_path(self, PATH="./"):
         self.PATH = PATH
 
-    # map_line : 완성된 비트맵 이미지의 한줄의 픽셀 개수(정사각형으로 고정), 만약 가로 세로 길이를 따로 구하고 싶다면 map_line 부분을 수정하면된다.
-    def create_24bmp(self, data, map_row=128, map_column=128, block_row=5, block_column=5): # TODO : mapline -> map column map row로 바꿀것
+    def create_24bmp(self, data, map_row=128, map_column=128, block_row=5, block_column=5):
         # bitmap pixel data (??byte)
         pixel_size = self.create_pi(data, map_row=map_row, map_column=map_column, block_row=block_row, block_column=block_column) # default : 5*5
 
         # bitmap info header (0x28byte)
         self.create_bitmapinfoheader_header(biWidth=map_column, biHeight=map_row)
 
-        # bitmap header (14bit)        
+        # bitmap header (14byte)        
         file_size = 0x35 + pixel_size # 0x35 : bfOffBits-1 == header size
         self.create_bitmapfileheader_header(file_size)
 
@@ -110,7 +88,7 @@ class Bmp24:
         self.biSizeImage = struct.pack("<I", biWidth*biHeight)  # 4byte # 비트맵 이미지의 픽셀 데이터 크기(압축되지 않은 크기) # 헤더를 제외한 픽셀 데이터에 대한 크기
 
     # pixel data : self.pi 에 픽셀 데이터 저장, return : 전체 픽셀 바이트 개수
-    # map_line : map의 한줄 픽셀 개수
+    # map_line : map의 한줄 픽셀 개수 # legacy
     def create_pi(self, file_data, map_line=25, map_row=5, map_column=5, block_row=5, block_column=5):
         # 만약 한 줄(열)의 픽셀 개수가 block_row보다 작은 경우 raise
         if(
@@ -204,22 +182,28 @@ class Bmp24:
         return result
         
     # bmp 이미지를 resize
-    def image_resize(self, width=256, height=256, bmp_file_name='result.bmp', output_path=None):
-        img = Image.open(self.PATH+'/bmp_result/'+bmp_file_name)
+    # bmp_file_path : bmp file이 위치한 경로
+    # bmp_file_name : bmp file의 이름
+    # output_path : 결과를 저장할 디렉토리의 경로
+    def image_resize(self, width=256, height=256, bmp_file_path="./", bmp_file_name='result.bmp', output_path=None):
+        if(os.path.isfile(bmp_file_path+bmp_file_name) == False):
+            raise FileExistsError("No Such File. : " + bmp_file_path+bmp_file_name)
+        img = Image.open(bmp_file_path+bmp_file_name)
         img_resize = img.resize((width, height))
+        
+        # 파일 이름에 _resize.bmp 추가
         if(bmp_file_name.find(".bmp") == -1): # .bmp가 없으면
             bmp_file_name = bmp_file_name+".bmp"
         bmp_file_name = bmp_file_name[:bmp_file_name.find(".bmp")] + "_reize.bmp"
         if(output_path != None):
             save_path = output_path
-            if(os.path.isdir(save_path) == False):
-                os.mkdir(save_path)
-            save_path = output_path+'/'+bmp_file_name
         else:
             save_path = self.PATH+'/resize_result'
-            if(os.path.isdir(save_path) == False):
-                os.mkdir(save_path)
-            save_path =save_path+'/'+bmp_file_name
+
+        if(os.path.isdir(save_path) == False):
+            os.mkdir(save_path)
+        save_path = save_path+'/'+bmp_file_name
+
         img_resize.save(save_path)
         debug_print("[+] Resize Done")
 
@@ -227,15 +211,13 @@ class Bmp24:
         # set save path
         if(output_path != None):
             save_path = output_path
-            if(os.path.isdir(save_path) == False):
-                os.mkdir(save_path)
-            save_path = output_path+'/'+bmp_file_name
         else:
             save_path = self.PATH+'/resize_result'
-            if(os.path.isdir(save_path) == False):
-                os.mkdir(save_path)
-            save_path = save_path+'/'+bmp_file_name
-
+            
+        if(os.path.isdir(save_path) == False):
+            os.mkdir(save_path)
+        save_path = save_path+'/'+bmp_file_name
+        
         # combine data
         self.combine_data()
         with open(save_path, 'wb') as fp:
@@ -268,7 +250,7 @@ class Bmp24:
     def make(self, file_data, bmp_file_name="result.bmp", path="./", result_output_path="./", resize_output_path="./"):
         file_size = len(file_data) 
         debug_print("file_size/3 : ",file_size/3)
-        if((file_size % 3) != 0): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌
+        if((file_size % 3) != 0): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌(한 픽셀을 3으로 표현하기 떄문에 3을 후에 곱하기 때문)
             file_data += b"\x00" * (3 - (file_size % 3)) # NULL Padding
             file_size = len(file_data)
         file_size = int(file_size/3) # 3으로 나누는 이유는 한 픽셀은 3바이트이다. 따라서 실제 데이터는 3의 배수이기 때문이다.
