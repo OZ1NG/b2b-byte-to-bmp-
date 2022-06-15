@@ -236,10 +236,12 @@ class Bmp24:
         return result
         
     # bmp 이미지를 resize
-    def image_resize(self, bmp_data, size=128*128):
-        img = Image.open(self.PATH+'/'+'result.bmp')
-        img_resize = img.resize((256, 256))
-        img_resize.save('data/dst/sample_pillow_resize_nearest.jpg')
+    def image_resize(self, width=256, height=256, bmp_file_name='result.bmp', bmp_data=None):
+        img = Image.open(self.PATH+'/'+bmp_file_name)
+        img_resize = img.resize((width, height))
+        bmp_file_name = bmp_file_name[:bmp_file_name.find(".bmp")] + "_reize.bmp"
+        img_resize.save(self.PATH+'/'+bmp_file_name)
+        print("[+] Resize Done")
 
     def save_bmp(self, bmp_file_name="result.bmp"):
         bmp_file_name = self.PATH + '/' + bmp_file_name
@@ -290,6 +292,7 @@ class Bmp24:
                 block_side = height
         
         self.create_24bmp(file_data, map_row=height, map_column=width, block_row=block_side, block_column=block_side)
+        self.image_resize()
 
 if __name__ == "__main__":
     bmp = Bmp24()
