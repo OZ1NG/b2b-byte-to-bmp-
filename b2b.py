@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # byte to bmp (b2b)
-from bmp24 import *
+from bmp24 import Bmp24
+from bmpGrayScale import BmpGrayScale
 import sys
 
 class Bmp:
@@ -8,8 +9,8 @@ class Bmp:
         self.EXE_FILES = []
         self.PATH = PATH
         self.bmp24 = Bmp24(PATH=PATH)
-        pass
-
+        self.bmpGS = BmpGrayScale(PATH=PATH)
+        
     # 디렉토리의 파일 이름 전부 가져오기
     def get_files_path(self, PATH="./"):
         # 현재 디렉토리에 존재하는 asm 파일 이름 확인
@@ -36,18 +37,16 @@ if __name__ == "__main__":
     
     bmp = Bmp(PATH=path)
     bmp.get_files_path(PATH=path)
-    if(Type == "bmp24"):
-        count = 0
-        for f in bmp.EXE_FILES:
-            count += 1
-            print(" [%d/%d] Running... %s" %(count ,len(bmp.EXE_FILES), f), end='\r')
-            file_data = open(path+'/'+f, 'rb').read()
-            #bmp.bmp24.make(file_data, bmp_file_name=f, resize_output_path="./bi_test_1", result_output_path="./result_bi_test_1")
+    count = 0
+    for f in bmp.EXE_FILES:
+        count += 1
+        print(" [%d/%d] Running... %s" %(count ,len(bmp.EXE_FILES), f), end='\r')
+        file_data = open(path+'/'+f, 'rb').read()
+        if(Type == "bmp24"):
             bmp.bmp24.make(file_data, bmp_file_name=f, resize_output_path=resize_output_path, result_output_path=result_output_path)
-    elif(Type == "grayscale"):
-        print("Not yet...")
-        pass
-    else:
-        raise TypeError("Plz Set Type.")
+        elif(Type == "grayscale"):
+            bmp.bmpGS.make(file_data, bmp_file_name=f, resize_output_path=resize_output_path, result_output_path=result_output_path)
+        else:
+            raise TypeError("Plz Set Type.")
 
     print("\n[+] Done")
