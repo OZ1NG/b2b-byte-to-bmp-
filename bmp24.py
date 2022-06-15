@@ -221,7 +221,7 @@ class Bmp24:
         
     # bmp 이미지를 resize
     def image_resize(self, width=256, height=256, bmp_file_name='result.bmp', output_path=None):
-        img = Image.open(self.PATH+'/'+bmp_file_name)
+        img = Image.open(self.PATH+'/bmp_result/'+bmp_file_name)
         img_resize = img.resize((width, height))
         if(bmp_file_name.find(".bmp") == -1): # .bmp가 없으면
             bmp_file_name = bmp_file_name+".bmp"
@@ -230,18 +230,23 @@ class Bmp24:
             #img_resize.save(self.PATH+'/'+bmp_file_name)
             save_path = output_path+'/'+bmp_file_name
         else:
-            save_path = self.PATH+'/result'
-            if(os.path.isdir(save_path)):
+            save_path = self.PATH+'/resize_result'
+            if(os.path.isdir(save_path) == False):
                 os.mkdir(save_path)
+                #raise FileNotFoundError("Dir not Found. Path : " + save_path)
             save_path =save_path+'/'+bmp_file_name
         img_resize.save(save_path)
         debug_print("[+] Resize Done")
 
     def save_bmp(self, bmp_file_name="result.bmp"):
-        bmp_file_name = self.PATH + '/' + bmp_file_name
+        save_path = self.PATH + '/bmp_result'
+        if(os.path.isdir(save_path) == False):
+            os.mkdir(save_path)
+            #raise FileNotFoundError("Dir not Found. Path : " + save_path)
+        save_path = save_path + '/' + bmp_file_name
         # combine data
         self.combine_data()
-        with open(bmp_file_name, 'wb') as fp:
+        with open(save_path, 'wb') as fp:
             fp.write(self.bmp)
         debug_print("[+] Save Done")
 
