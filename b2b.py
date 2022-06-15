@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 # byte to bmp (b2b)
 from bmp24 import *
+import sys
 
 class Bmp:
     def __init__(self, PATH="./"):
         self.EXE_FILES = []
         self.PATH = PATH
-        self.bmp24 = Bmp24()
+        self.bmp24 = Bmp24(PATH=PATH)
         pass
 
     # 디렉토리의 파일 이름 전부 가져오기
@@ -26,13 +27,26 @@ class Bmp:
             exit(0)
 
 if __name__ == "__main__":
-    path = "../It's_mine_My_precious/test_0"
+    #path = "../It's_mine_My_precious/test_1"
+    Type = sys.argv[1]
+    path = sys.argv[2]
+    resize_output_path = sys.argv[3]
+    result_output_path = sys.argv[4]
+    
     bmp = Bmp(PATH=path)
     bmp.get_files_path(PATH=path)
-    count = 0
-    for f in bmp.EXE_FILES:
-        count += 1
-        print(" [%d/%d] Running... %s" %(count ,len(bmp.EXE_FILES), f), end='\r')
-        file_data = open(path+'/'+f, 'rb').read()
-        bmp.bmp24.make(file_data, bmp_file_name=f,output_path="./bi_test_0")
+    if(Type == "bmp24"):
+        count = 0
+        for f in bmp.EXE_FILES:
+            count += 1
+            print(" [%d/%d] Running... %s" %(count ,len(bmp.EXE_FILES), f), end='\r')
+            file_data = open(path+'/'+f, 'rb').read()
+            #bmp.bmp24.make(file_data, bmp_file_name=f, resize_output_path="./bi_test_1", result_output_path="./result_bi_test_1")
+            bmp.bmp24.make(file_data, bmp_file_name=f, resize_output_path=resize_output_path, result_output_path=result_output_path)
+    elif(Type == "grayscale"):
+        print("Not yet...")
+        pass
+    else:
+        raise TypeError("Plz Set Type.")
+
     print("\n[+] Done")

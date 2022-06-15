@@ -227,7 +227,6 @@ class Bmp24:
             bmp_file_name = bmp_file_name+".bmp"
         bmp_file_name = bmp_file_name[:bmp_file_name.find(".bmp")] + "_reize.bmp"
         if(output_path != None):
-            #img_resize.save(self.PATH+'/'+bmp_file_name)
             save_path = output_path
             if(os.path.isdir(save_path) == False):
                 os.mkdir(save_path)
@@ -236,17 +235,23 @@ class Bmp24:
             save_path = self.PATH+'/resize_result'
             if(os.path.isdir(save_path) == False):
                 os.mkdir(save_path)
-                #raise FileNotFoundError("Dir not Found. Path : " + save_path)
             save_path =save_path+'/'+bmp_file_name
         img_resize.save(save_path)
         debug_print("[+] Resize Done")
 
-    def save_bmp(self, bmp_file_name="result.bmp"):
-        save_path = self.PATH + '/bmp_result'
-        if(os.path.isdir(save_path) == False):
-            os.mkdir(save_path)
-            #raise FileNotFoundError("Dir not Found. Path : " + save_path)
-        save_path = save_path + '/' + bmp_file_name
+    def save_bmp(self, bmp_file_name="result.bmp", output_path=None):
+        # set save path
+        if(output_path != None):
+            save_path = output_path
+            if(os.path.isdir(save_path) == False):
+                os.mkdir(save_path)
+            save_path = output_path+'/'+bmp_file_name
+        else:
+            save_path = self.PATH+'/resize_result'
+            if(os.path.isdir(save_path) == False):
+                os.mkdir(save_path)
+            save_path = save_path+'/'+bmp_file_name
+
         # combine data
         self.combine_data()
         with open(save_path, 'wb') as fp:
@@ -277,7 +282,7 @@ class Bmp24:
         debug_print("init_width : ",width)
         return height, width
 
-    def make(self, file_data, bmp_file_name="result.bmp", path="./", output_path="./"):
+    def make(self, file_data, bmp_file_name="result.bmp", path="./", result_output_path="./", resize_output_path="./"):
         file_size = len(file_data) 
         debug_print("file_size/3 : ",file_size/3)
         if((file_size % 3) != 0): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌
@@ -299,8 +304,8 @@ class Bmp24:
         self.set_bmp_file_name(BMP_FILE_NAME=bmp_file_name)
         self.set_path(PATH=path)
         self.create_24bmp(file_data, map_row=height, map_column=width, block_row=block_side, block_column=block_side)
-        self.save_bmp(bmp_file_name=bmp_file_name)
-        self.image_resize(bmp_file_name=bmp_file_name, output_path=output_path)
+        self.save_bmp(bmp_file_name=bmp_file_name, output_path=result_output_path)
+        self.image_resize(bmp_file_name=bmp_file_name, output_path=resize_output_path)
         self.__init__(BMP_FILE_NAME=bmp_file_name, PATH=path)
  
 if __name__ == "__main__":
