@@ -228,6 +228,9 @@ class Bmp24:
         bmp_file_name = bmp_file_name[:bmp_file_name.find(".bmp")] + "_reize.bmp"
         if(output_path != None):
             #img_resize.save(self.PATH+'/'+bmp_file_name)
+            save_path = output_path
+            if(os.path.isdir(save_path) == False):
+                os.mkdir(save_path)
             save_path = output_path+'/'+bmp_file_name
         else:
             save_path = self.PATH+'/resize_result'
