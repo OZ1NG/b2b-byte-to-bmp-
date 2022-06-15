@@ -150,6 +150,18 @@ class BmpGrayScale:
 
         return total_padding_size
 
+    # padBytes : 패딩해줘야 하는 값 : bmp은 한 행(column)당 4바이트의 단위를 맞춰줘야 함(실제로 있는 멤버 변수)
+    def block_padBytes(self, column_data):
+        # 한 행의 길이가 4의 배수인지 체크
+        if((len(column_data[0]) % 4) != 0):
+            # padding # overhead... sry...
+            padding_ = list(np.zeros((1, 4 - (len(column_data[0]) % 4)))[0])
+            tmp_list = []
+            for r in column_data:
+                tmp_list.append(list(r) + padding_)
+            return np.array(tmp_list)
+        return column_data
+
     # blocks type : np.array
     def block_combine(self, blocks:np.array, map_row=5, map_column=5):
         result = None
@@ -164,8 +176,10 @@ class BmpGrayScale:
             tmp1 = tuple(blocks[bcc:bcc+block_column_count])
             tmp2 = np.concatenate(tmp1, axis=1) # axis=1 : y축으로 병합
             if(result is None):
-                result = tmp2
+                result = self.block_padBytes(tmp2)
                 continue
+            
+            tmp2 = self.block_padBytes(tmp2)
             
             result = np.concatenate((result, tmp2), axis=0) # x축으로 병합 # result 아래에 tmp2를 추가함
 
