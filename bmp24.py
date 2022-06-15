@@ -30,7 +30,7 @@ def debug_print(*msg):
     if(DEBUG):
         print("[DEBUG]", " ".join(msg))
 
-'''
+''' # little endian
     struct.pack("<B", int) unsigned char  1byte
     struct.pack("<H", int) unsigned short 2byte
     struct.pack("<I", int) unsigned int   4byte
@@ -134,14 +134,6 @@ class Bmp24:
         self.pi = pixel_block.tobytes() # 바이트 타입으로 한번에 리턴
         return len(self.pi)
 
-    # map_col
-    # map_row
-    # block_col
-    # block_row
-    # pad_block_size
-    # pad_col
-    # pad_row
-    # 사진 
     def get_padsize(self, map_col=1, map_row=1, block_col=1, block_row=1):
         pad_col = 0
         pad_row = 0
@@ -184,7 +176,6 @@ class Bmp24:
             padding_ = list(np.zeros((1, 4 - (len(column_data[0]) % 4)))[0])
             tmp_list = []
             for r in column_data:
-                #print("r:",list(r))
                 tmp_list.append(list(r) + padding_)
             return np.array(tmp_list)
         return column_data
@@ -200,20 +191,13 @@ class Bmp24:
         debug_print("block_column_count : ", block_column_count)
         
         for bcc in range(0, len(blocks), block_column_count):
-            #print("bcc:", bcc)
             tmp1 = tuple(blocks[bcc:bcc+block_column_count])
-            #print("tmp1:", tmp1)
             tmp2 = np.concatenate(tmp1, axis=1) # axis=1 : y축으로 병합
             if(result is None):
                 result = self.block_padBytes(tmp2)
-                #print("RESULT : ",result)
                 continue
             
             tmp2 = self.block_padBytes(tmp2)
-            #print("tmp2 : ",tmp2[0])
-            #print("tmp2 len : ",len(tmp2[0]))
-            
-            #print("result : ",result[-1])
             
             result = np.concatenate((result, tmp2), axis=0) # x축으로 병합 # result 아래에 tmp2를 추가함
 
@@ -277,7 +261,6 @@ class Bmp24:
         else: # 홀수
             height = divisorsList[idx]
             width = height
-        #print("divisorsList :",divisorsList)
         debug_print("init_height : ",height)
         debug_print("init_width : ",width)
         return height, width
@@ -310,30 +293,6 @@ class Bmp24:
  
 if __name__ == "__main__":
     bmp = Bmp24()
-    '''
-    test_width = 1
-    test_height = 255
-    test_byte = b''
-    for i in range(test_height):
-        test_byte += bytes([i])*(test_width*3)
-    print("test_byte : ",len(test_byte))
-    '''
     #bmp.create_24bmp(test_byte, map_row=test_height, map_column=test_width)
     test_byte = open('./sample/00cec16422b4d7b1a28a12ca04dc7f3c.exe', 'rb').read()
     bmp.make(test_byte)
-
-    '''
-    test = bmp.block_create(test_byte, row=5, column=5)
-    print(test)
-    print(len(test[0][0]))
-
-    test1 = bmp.block_combine(test, map_column=25)
-    print(test1)
-
-    print(test1.tobytes())
-    '''
-    '''
-    size = bmp.create_pi(test_byte, map_row=25, map_column=25)
-    print(bmp.pi)
-    print(size)
-    '''
