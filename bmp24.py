@@ -107,8 +107,8 @@ class Bmp24:
             map_column += (block_column*3 - (map_column % (block_column*3))) # map_line + ?하는 이유는 패딩이 된 경우 한 줄의 크기가 패딩에 의해 늘어나기 때문이다.
         if(map_row % block_row != 0):
             map_row += (block_row - (map_row % block_row)) # map_line + ?하는 이유는 패딩이 된 경우 한 줄의 크기가 패딩에 의해 늘어나기 때문이다.            
-        debug_print("map_column : ", map_column)
-        debug_print("map_row : ", map_row )
+        self.debug_print("map_column : ", map_column)
+        self.debug_print("map_row : ", map_row )
             
         pixel_block = self.block_combine(blocks, map_row=map_row, map_column=map_column)
         self.pi = pixel_block.tobytes() # 바이트 타입으로 한번에 리턴
@@ -136,14 +136,14 @@ class Bmp24:
         # block_column은 무조건 3의 배수(1픽셀은 3바이트로 표현되기 때문)
         block_column *= 3
 
-        debug_print("map_col :",map_column) 
-        debug_print("map_row :",map_row)
-        debug_print("block_col :",block_column)
-        debug_print("block_row :",block_row)
+        self.debug_print("map_col :",map_column) 
+        self.debug_print("map_row :",map_row)
+        self.debug_print("block_col :",block_column)
+        self.debug_print("block_row :",block_row)
 
         file_data += b'\x90'*self.get_padsize(map_row=map_row, map_col=map_column, block_col=block_column, block_row=block_row)  # nop padding
-        debug_print("file_data :", len(file_data))
-        debug_print("len(file_data)/(block_row*block_column) :", len(file_data)/(block_row*block_column))
+        self.debug_print("file_data :", len(file_data))
+        self.debug_print("len(file_data)/(block_row*block_column) :", len(file_data)/(block_row*block_column))
         
         blocks = np.frombuffer(file_data, dtype=np.uint8).reshape((int(len(file_data)/(block_row*block_column)),block_row,block_column)) # 8비트(1바이트) 단위로 배열로 변경
         return blocks
@@ -166,9 +166,9 @@ class Bmp24:
         # 한 줄당 블록의 개수 == map_row / block row 개수
         block_row_count = int(map_row/len(blocks[0]))
         block_column_count = int(map_column/len(blocks[0][0]))
-        debug_print("blocks : ", len(blocks))
-        debug_print("block_row_count : ", block_row_count)
-        debug_print("block_column_count : ", block_column_count)
+        self.debug_print("blocks : ", len(blocks))
+        self.debug_print("block_row_count : ", block_row_count)
+        self.debug_print("block_column_count : ", block_column_count)
         
         for bcc in range(0, len(blocks), block_column_count):
             tmp1 = tuple(blocks[bcc:bcc+block_column_count])
@@ -207,7 +207,7 @@ class Bmp24:
         save_path = save_path+'/'+bmp_file_name
 
         img_resize.save(save_path)
-        debug_print("[+] Resize Done")
+        self.debug_print("[+] Resize Done")
 
     def save_bmp(self, bmp_file_name="result.bmp", output_path=None):
         # set save path
@@ -224,7 +224,7 @@ class Bmp24:
         self.combine_data()
         with open(save_path, 'wb') as fp:
             fp.write(self.bmp)
-        debug_print("[+] Save Done")
+        self.debug_print("[+] Save Done")
 
     # 약수를 통해 최대한 가장 가까운 width와 height 값을 구함        
     def getHeightWidth(self, file_size):
@@ -245,18 +245,18 @@ class Bmp24:
         else: # 홀수
             height = divisorsList[idx]
             width = height
-        debug_print("init_height : ",height)
-        debug_print("init_width : ",width)
+        self.debug_print("init_height : ",height)
+        self.debug_print("init_width : ",width)
         return height, width
 
     def make(self, file_data, bmp_file_name="result.bmp", path="./", result_output_path="./", resize_output_path="./"):
         file_size = len(file_data) 
-        debug_print("file_size/3 : ",file_size/3)
+        self.debug_print("file_size/3 : ",file_size/3)
         if((file_size % 3) != 0): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌(한 픽셀을 3으로 표현하기 떄문에 3을 후에 곱하기 때문)
             file_data += b"\x00" * (3 - (file_size % 3)) # NULL Padding
             file_size = len(file_data)
         file_size = int(file_size/3) # 3으로 나누는 이유는 한 픽셀은 3바이트이다. 따라서 실제 데이터는 3의 배수이기 때문이다.
-        debug_print("file_size/3 -2 : ",file_size/3)
+        self.debug_print("file_size/3 -2 : ",file_size/3)
         
         height, width = self.getHeightWidth(file_size)
         block_side = 5 # default
