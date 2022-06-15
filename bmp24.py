@@ -250,7 +250,7 @@ class Bmp24:
         return height, width
 
     # block_side : 블록의 한 변의 길이
-    def make(self, file_data, bmp_file_name="result.bmp", path="./", result_output_path="./", resize_output_path="./", block_side=5):
+    def make(self, file_data, bmp_file_name="result.bmp", path="./", result_output_path="./", resize_output_path="./", block_side=5, resize_row=256, resize_column=256):
         file_size = len(file_data) 
         self.debug_print("file_size/3 : ",file_size/3)
         if((file_size % 3) != 0): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌(한 픽셀을 3으로 표현하기 떄문에 3을 후에 곱하기 때문)
@@ -272,7 +272,7 @@ class Bmp24:
         self.set_path(PATH=path)
         self.create_24bmp(file_data, map_row=height, map_column=width, block_row=block_side, block_column=block_side)
         self.save_bmp(bmp_file_name=bmp_file_name, output_path=result_output_path)
-        self.image_resize(bmp_file_name=bmp_file_name, output_path=resize_output_path, bmp_file_path=result_output_path)
+        self.image_resize(width=resize_column, height=resize_row, bmp_file_name=bmp_file_name, output_path=resize_output_path, bmp_file_path=result_output_path)
         self.__init__(BMP_FILE_NAME=bmp_file_name, PATH=path)
  
 if __name__ == "__main__":
