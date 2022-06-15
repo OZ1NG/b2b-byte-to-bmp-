@@ -148,7 +148,7 @@ class Bmp24:
         blocks = np.frombuffer(file_data, dtype=np.uint8).reshape((int(len(file_data)/(block_row*block_column)),block_row,block_column)) # 8비트(1바이트) 단위로 배열로 변경
         return blocks
 
-    # padBytes : 패딩해줘야 하는 값 : bmp24는 한 행(column)당 4바이트의 단위를 맞춰줘야 함(실제로 있는 멤버 변수)
+    # padBytes : 패딩해줘야 하는 값 : bmp는 한 행(column)당 4바이트의 단위를 맞춰줘야 함(실제로 있는 멤버 변수)
     def block_padBytes(self, column_data):
         # 한 행의 길이가 4의 배수인지 체크
         if((len(column_data[0]) % 4) != 0):
