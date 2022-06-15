@@ -4,10 +4,6 @@ import struct
 import numpy as np
 from PIL import Image
 
-DEBUG = False
-def debug_print(*msg):
-    if(DEBUG):
-        print("[DEBUG]", " ".join(msg))
 
 class BmpGrayScale:
     def __init__(self, PATH='./', BMP_FILE_NAME="result.bmp"):
@@ -17,6 +13,9 @@ class BmpGrayScale:
         self.ASM_DATA = None 
         self.BMP_FILE_NAME = BMP_FILE_NAME
         
+        # for DEBUG
+        self.DEBUG = False
+
         # 모든 값은 little endian
         self.bmp = b''
 
@@ -50,7 +49,11 @@ class BmpGrayScale:
 
         # BITMAP PIXELS
         self.pi = b''
-    
+        
+    def debug_print(self, *msg):
+        if(self.DEBUG):
+            print("[DEBUG]", " ".join(msg))
+
     def set_bmp_file_name(self, BMP_FILE_NAME="result.bmp"):
         self.BMP_FILE_NAME = BMP_FILE_NAME
 
@@ -178,7 +181,7 @@ class BmpGrayScale:
 
         img = Image.open(bmp_file_path+bmp_file_name)
         img_resize = img.resize((width, height))
-        
+
         # 파일 이름에 _resize.bmp 추가
         if(bmp_file_name.find(".bmp") == -1): # .bmp가 없으면
             bmp_file_name = bmp_file_name+".bmp"
