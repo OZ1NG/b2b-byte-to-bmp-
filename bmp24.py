@@ -25,26 +25,15 @@ def print_hex(data): # for test
             tmp += hex(v)[2:]+' '
     print(padding(idx, 8)+' ', tmp+"\n")
 
-# 디렉토리의 파일 이름 전부 가져오기
-def getFileNames(PATH, ASM_FILES):
-    # 현재 디렉토리에 존재하는 asm 파일 이름 확인
-    files = os.listdir(PATH)
-    # print(files) # TEST
-    for f in files:
-        if(".asm" in f[-4:]):
-            ASM_FILES.append(PATH+f)
-
-    if(len(ASM_FILES)):
-        print("[+] asm files list : ", ASM_FILES)
-    else:
-        # 파싱할 asm 파일이 없으므로 종료
-        print("[!] asm file doesn't exist!")
-        exit(0)
+DEBUG = False
+def debug_print(*msg):
+    if(DEBUG):
+        print("[DEBUG]", " ".join(msg))
 
 '''
-    struct.pack(">B", int) unsigned char  1byte
-    struct.pack(">H", int) unsigned short 2byte
-    struct.pack(">I", int) unsigned int   4byte
+    struct.pack("<B", int) unsigned char  1byte
+    struct.pack("<H", int) unsigned short 2byte
+    struct.pack("<I", int) unsigned int   4byte
 '''
 class Bmp24:
     def __init__(self, PATH='./', BMP_FILE_NAME="result.bmp"):
@@ -85,16 +74,14 @@ class Bmp24:
         # BITMAP PIXELS
         self.pi = b''
 
-        # padding flag : 패딩이 된 경우 True
-        self.padding_flag = False
-
     def set_bmp_file_name(self, BMP_FILE_NAME="result.bmp"):
         self.BMP_FILE_NAME = BMP_FILE_NAME
 
+    def set_path(self, PATH="./"):
+        self.PATH = PATH
+
     # map_line : 완성된 비트맵 이미지의 한줄의 픽셀 개수(정사각형으로 고정), 만약 가로 세로 길이를 따로 구하고 싶다면 map_line 부분을 수정하면된다.
     def create_24bmp(self, data, map_row=128, map_column=128, block_row=5, block_column=5): # TODO : mapline -> map column map row로 바꿀것
-        self.padding_flag = False
-
         # bitmap pixel data (??byte)
         pixel_size = self.create_pi(data, map_row=map_row, map_column=map_column, block_row=block_row, block_column=block_column) # default : 5*5
 
@@ -140,8 +127,8 @@ class Bmp24:
             map_column += (block_column*3 - (map_column % (block_column*3))) # map_line + ?하는 이유는 패딩이 된 경우 한 줄의 크기가 패딩에 의해 늘어나기 때문이다.
         if(map_row % block_row != 0):
             map_row += (block_row - (map_row % block_row)) # map_line + ?하는 이유는 패딩이 된 경우 한 줄의 크기가 패딩에 의해 늘어나기 때문이다.            
-        print("map_column : ", map_column)
-        print("map_row : ", map_row )
+        debug_print("map_column : ", map_column)
+        debug_print("map_row : ", map_row )
             
         pixel_block = self.block_combine(blocks, map_row=map_row, map_column=map_column)
         self.pi = pixel_block.tobytes() # 바이트 타입으로 한번에 리턴
@@ -177,14 +164,14 @@ class Bmp24:
         # block_column은 무조건 3의 배수(1픽셀은 3바이트로 표현되기 때문)
         block_column *= 3
 
-        print("map_col :",map_column) 
-        print("map_row :",map_row)
-        print("block_col :",block_column)
-        print("block_row :",block_row)
+        debug_print("map_col :",map_column) 
+        debug_print("map_row :",map_row)
+        debug_print("block_col :",block_column)
+        debug_print("block_row :",block_row)
 
         file_data += b'\x90'*self.get_padsize(map_row=map_row, map_col=map_column, block_col=block_column, block_row=block_row)  # nop padding
-        print("file_data :", len(file_data))
-        print("len(file_data)/(block_row*block_column) :", len(file_data)/(block_row*block_column))
+        debug_print("file_data :", len(file_data))
+        debug_print("len(file_data)/(block_row*block_column) :", len(file_data)/(block_row*block_column))
         
         blocks = np.frombuffer(file_data, dtype=np.uint8).reshape((int(len(file_data)/(block_row*block_column)),block_row,block_column)) # 8비트(1바이트) 단위로 배열로 변경
         return blocks
@@ -208,9 +195,9 @@ class Bmp24:
         # 한 줄당 블록의 개수 == map_row / block row 개수
         block_row_count = int(map_row/len(blocks[0]))
         block_column_count = int(map_column/len(blocks[0][0]))
-        print("blocks : ", len(blocks))
-        print("block_row_count : ", block_row_count)
-        print("block_column_count : ", block_column_count)
+        debug_print("blocks : ", len(blocks))
+        debug_print("block_row_count : ", block_row_count)
+        debug_print("block_column_count : ", block_column_count)
         
         for bcc in range(0, len(blocks), block_column_count):
             #print("bcc:", bcc)
@@ -233,12 +220,22 @@ class Bmp24:
         return result
         
     # bmp 이미지를 resize
-    def image_resize(self, width=256, height=256, bmp_file_name='result.bmp', bmp_data=None):
+    def image_resize(self, width=256, height=256, bmp_file_name='result.bmp', output_path=None):
         img = Image.open(self.PATH+'/'+bmp_file_name)
         img_resize = img.resize((width, height))
+        if(bmp_file_name.find(".bmp") == -1): # .bmp가 없으면
+            bmp_file_name = bmp_file_name+".bmp"
         bmp_file_name = bmp_file_name[:bmp_file_name.find(".bmp")] + "_reize.bmp"
-        img_resize.save(self.PATH+'/'+bmp_file_name)
-        print("[+] Resize Done")
+        if(output_path != None):
+            #img_resize.save(self.PATH+'/'+bmp_file_name)
+            save_path = output_path+'/'+bmp_file_name
+        else:
+            save_path = self.PATH+'/result'
+            if(os.path.isdir(save_path)):
+                os.mkdir(save_path)
+            save_path =save_path+'/'+bmp_file_name
+        img_resize.save(save_path)
+        debug_print("[+] Resize Done")
 
     def save_bmp(self, bmp_file_name="result.bmp"):
         bmp_file_name = self.PATH + '/' + bmp_file_name
@@ -246,7 +243,7 @@ class Bmp24:
         self.combine_data()
         with open(bmp_file_name, 'wb') as fp:
             fp.write(self.bmp)
-        print("[+] Save Done")
+        debug_print("[+] Save Done")
 
     # 약수를 통해 최대한 가장 가까운 width와 height 값을 구함        
     def getHeightWidth(self, file_size):
@@ -268,17 +265,19 @@ class Bmp24:
             height = divisorsList[idx]
             width = height
         #print("divisorsList :",divisorsList)
-        print("init_height : ",height)
-        print("init_width : ",width)
+        debug_print("init_height : ",height)
+        debug_print("init_width : ",width)
         return height, width
 
-    def make(self, file_data, bmp_file_name="result.bmp", path="./"):
+    def make(self, file_data, bmp_file_name="result.bmp", path="./", output_path="./"):
         file_size = len(file_data) 
-        print("file_size/3 : ",file_size/3)
-        if(file_size % 3): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌
-            file_size += "\x00" * (3 - (file_size % 3)) # NULL Padding
+        debug_print("file_size/3 : ",file_size/3)
+        if((file_size % 3) != 0): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌
+            file_data += b"\x00" * (3 - (file_size % 3)) # NULL Padding
+            file_size = len(file_data)
         file_size = int(file_size/3) # 3으로 나누는 이유는 한 픽셀은 3바이트이다. 따라서 실제 데이터는 3의 배수이기 때문이다.
-
+        debug_print("file_size/3 -2 : ",file_size/3)
+        
         height, width = self.getHeightWidth(file_size)
         block_side = 5 # default
         # 값 체크 : 만약 block_size 값보다 더 작은 경우 더 작은 값으로 block_side 설정
@@ -288,10 +287,12 @@ class Bmp24:
             else:
                 block_side = height
         
+        bmp_file_name += ".bmp"
         self.set_bmp_file_name(BMP_FILE_NAME=bmp_file_name)
+        self.set_path(PATH=path)
         self.create_24bmp(file_data, map_row=height, map_column=width, block_row=block_side, block_column=block_side)
         self.save_bmp(bmp_file_name=bmp_file_name)
-        self.image_resize(bmp_file_name=bmp_file_name)
+        self.image_resize(bmp_file_name=bmp_file_name, output_path=output_path)
         self.__init__(BMP_FILE_NAME=bmp_file_name, PATH=path)
  
 if __name__ == "__main__":
