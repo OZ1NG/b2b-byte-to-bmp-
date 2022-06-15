@@ -188,9 +188,9 @@ class Bmp24:
     # bmp_file_name : bmp file의 이름
     # output_path : 결과를 저장할 디렉토리의 경로
     def image_resize(self, width=256, height=256, bmp_file_path="./", bmp_file_name='result.bmp', output_path=None):
-        if(os.path.isfile(bmp_file_path+bmp_file_name) == False):
-            raise FileExistsError("No Such File. : " + bmp_file_path+bmp_file_name)
-        img = Image.open(bmp_file_path+bmp_file_name)
+        if(os.path.isfile(bmp_file_path+'/'+bmp_file_name) == False):
+            raise FileExistsError("No Such File. : " + bmp_file_path+'/'+bmp_file_name)
+        img = Image.open(bmp_file_path+'/'+bmp_file_name)
         img_resize = img.resize((width, height))
 
         # 파일 이름에 _resize.bmp 추가
@@ -272,7 +272,7 @@ class Bmp24:
         self.set_path(PATH=path)
         self.create_24bmp(file_data, map_row=height, map_column=width, block_row=block_side, block_column=block_side)
         self.save_bmp(bmp_file_name=bmp_file_name, output_path=result_output_path)
-        self.image_resize(bmp_file_name=bmp_file_name, output_path=resize_output_path)
+        self.image_resize(bmp_file_name=bmp_file_name, output_path=resize_output_path, bmp_file_path=result_output_path)
         self.__init__(BMP_FILE_NAME=bmp_file_name, PATH=path)
  
 if __name__ == "__main__":
