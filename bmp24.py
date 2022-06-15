@@ -69,7 +69,7 @@ class Bmp24:
         self.create_bitmapinfoheader_header(biWidth=map_column, biHeight=map_row)
 
         # bitmap header (14byte)        
-        file_size = 0x35 + pixel_size # 0x35 : bfOffBits-1 == header size
+        file_size = len(self.bf) + len(self.bi) + pixel_size # 0x35 : bfOffBits-1 == header size
         self.create_bitmapfileheader_header(file_size)
 
     # TODO : 값이 없는 필드의 경우 예외 처리 과정 추가 필요
