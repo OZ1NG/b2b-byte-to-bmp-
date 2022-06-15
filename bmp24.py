@@ -138,13 +138,15 @@ class Bmp24:
         map_column *= 3
         # 블록들 생성
         blocks = self.block_create(file_data, map_row=map_row, map_column=map_column ,block_row=block_row, block_column=block_column)        
-        if(self.padding_flag):
+        #if(self.padding_flag):
+        if(map_column % (block_column*3) != 0):
             map_column += (block_column*3 - (map_column % (block_column*3))) # map_line + ?하는 이유는 패딩이 된 경우 한 줄의 크기가 패딩에 의해 늘어나기 때문이다.
+        if(map_row % block_row != 0):
             map_row += (block_row - (map_row % block_row)) # map_line + ?하는 이유는 패딩이 된 경우 한 줄의 크기가 패딩에 의해 늘어나기 때문이다.            
-            print("map_column : ", map_column)
-            print("map_row : ", map_row )
+        print("map_column : ", map_column)
+        print("map_row : ", map_row )
             
-        pixel_block = self.block_combine(blocks, map_line=map_line, map_row=map_row, map_column=map_column)
+        pixel_block = self.block_combine(blocks, map_row=map_row, map_column=map_column)
         self.pi = pixel_block.tobytes() # 바이트 타입으로 한번에 리턴
         return len(self.pi)
 
@@ -157,12 +159,18 @@ class Bmp24:
     # pad_row
     # 사진 
     def get_padsize(self, map_col=1, map_row=1, block_col=1, block_row=1):
-        pad_col = (block_col - (map_col % block_col)) # pad block의 행의 픽셀 개수
-        pad_row = (block_row - (map_row % block_row)) # pad block의 열의 픽셀 개수
+        pad_col = 0
+        pad_row = 0
+        if((map_col % block_col) != 0):
+            pad_col = (block_col - (map_col % block_col)) # pad block의 행의 픽셀 개수
+        if(map_row % block_row != 0):
+            pad_row = (block_row - (map_row % block_row)) # pad block의 열의 픽셀 개수
+        
         padding_col_size = pad_row * map_col
         padding_row_size = pad_col * map_row
         pad_block_size = pad_col * pad_row
         total_padding_size = padding_col_size + padding_row_size + pad_block_size
+
         return total_padding_size
         
     # 하나의 블럭 생성 (1map = row*column 크기)
@@ -172,17 +180,15 @@ class Bmp24:
         # block_column은 무조건 3의 배수(1픽셀은 3바이트로 표현되기 때문)
         block_column *= 3
 
-        print("map_col :",map_column)
+        print("map_col :",map_column) 
         print("map_row :",map_row)
         print("block_col :",block_column)
         print("block_row :",block_row)
 
-        if((len(file_data) % (block_row*block_column)) != 0):
-            file_data += b'\x90'*self.get_padsize(map_row=map_row, map_col=map_column, block_col=block_column, block_row=block_row)  # nop padding
-            print("file_data :", len(file_data))
-            print("len(file_data)/(block_row*block_column) :", len(file_data)/(block_row*block_column))
-            self.padding_flag = True
-            
+        file_data += b'\x90'*self.get_padsize(map_row=map_row, map_col=map_column, block_col=block_column, block_row=block_row)  # nop padding
+        print("file_data :", len(file_data))
+        print("len(file_data)/(block_row*block_column) :", len(file_data)/(block_row*block_column))
+        
         blocks = np.frombuffer(file_data, dtype=np.uint8).reshape((int(len(file_data)/(block_row*block_column)),block_row,block_column)) # 8비트(1바이트) 단위로 배열로 변경
         return blocks
 
@@ -200,15 +206,15 @@ class Bmp24:
         return column_data
 
     # blocks type : np.array
-    def block_combine(self, blocks:np.array, map_line=1, map_row=5, map_column=5):
+    def block_combine(self, blocks:np.array, map_row=5, map_column=5):
         result = None
         # 한 줄당 블록의 개수 == map_row / block row 개수
         block_row_count = int(map_row/len(blocks[0]))
         block_column_count = int(map_column/len(blocks[0][0]))
+        print("blocks : ", len(blocks))
         print("block_row_count : ", block_row_count)
         print("block_column_count : ", block_column_count)
         
-        #size # block_row_count
         for bcc in range(0, len(blocks), block_column_count):
             #print("bcc:", bcc)
             tmp1 = tuple(blocks[bcc:bcc+block_column_count])
@@ -223,7 +229,7 @@ class Bmp24:
             #print("tmp2 : ",tmp2[0])
             #print("tmp2 len : ",len(tmp2[0]))
             
-            #print("result : ",result)
+            #print("result : ",result[-1])
             
             result = np.concatenate((result, tmp2), axis=0) # x축으로 병합 # result 아래에 tmp2를 추가함
 
@@ -231,54 +237,73 @@ class Bmp24:
         
     # bmp 이미지를 resize
     def image_resize(self, bmp_data, size=128*128):
-        
-        pass
+        img = Image.open(self.PATH+'/'+'result.bmp')
+        img_resize = img.resize((256, 256))
+        img_resize.save('data/dst/sample_pillow_resize_nearest.jpg')
 
     def save_bmp(self, bmp_file_name="result.bmp"):
+        bmp_file_name = self.PATH + '/' + bmp_file_name
         # combine data
         self.combine_data()
         with open(bmp_file_name, 'wb') as fp:
             fp.write(self.bmp)
+        print("[+] Save Done")
+
+    # 약수를 통해 최대한 가장 가까운 width와 height 값을 구함        
+    def getHeightWidth(self, file_size):
+        divisorsList = []
+        for i in range(1, int(file_size**(1/2)) + 1):
+            if (file_size % i == 0):
+                divisorsList.append(i) 
+                if ( (i**2) != file_size) : 
+                    divisorsList.append(file_size // i)
+        divisorsList.sort()
+        # 더 큰 값이 width가 된다.
+        height = 0
+        width = 0
+        idx = int(len(divisorsList)/2)
+        if((len(divisorsList) % 2) == 0): # 짝수
+            height = divisorsList[idx-1]
+            width = divisorsList[idx]
+        else: # 홀수
+            height = divisorsList[idx]
+            width = height
+        #print("divisorsList :",divisorsList)
+        print("init_height : ",height)
+        print("init_width : ",width)
+        return height, width
+
+    def make(self, file_data):
+        file_size = len(file_data) 
+        print("file_size/3 : ",file_size/3)
+        if(file_size % 3): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌
+            file_size += "\x00" * (3 - (file_size % 3)) # NULL Padding
+        file_size = int(file_size/3) # 3으로 나누는 이유는 한 픽셀은 3바이트이다. 따라서 실제 데이터는 3의 배수이기 때문이다.
+
+        height, width = self.getHeightWidth(file_size)
+        block_side = 5 # default
+        # 값 체크 : 만약 block_size 값보다 더 작은 경우 더 작은 값으로 block_side 설정
+        if (height < block_side) or (width < block_side):
+            if (width < height):
+                block_side = width
+            else:
+                block_side = height
         
-
-# legacy... # 과제를 위해 만들었던 것...
-class asm2bmp:
-    def __init__(self):
-        self.bmp24 = Bmp24()
-    
-    # opcode의 크기를 15byte로 패딩->3의 배수로 패딩을 통해 가공시킨 뒤 읽어옴
-    # 3의 배수인 이유는 비트맵에서 한 픽셀을 3바이트로 표현 가능하기 떄문임
-    def read_asm(self, file_data):
-        for line in file_data:
-            # 주석 제거
-            remark_idx = line.find(";")
-            if(remark_idx != -1):
-                line = line[:remark_idx]
-            line = line.strip()
-
-            # opcode
-            opcode = line.split(' ', 1)[0]
-            ## opcode padding : 패딩 값은 0xff # 변경 가능
-            opcode += "\xff" * (3 - (len(opcode) % 3))
-            
-            # operands
-            operands = line.split(' ', 1)[1]
-            ## operands padding : 패딩 값은 0xa0 # 변경 가능
-            operands += "\xa0" * (3 - (len(operands) % 3))
-            
-        pass
+        self.create_24bmp(file_data, map_row=height, map_column=width, block_row=block_side, block_column=block_side)
 
 if __name__ == "__main__":
     bmp = Bmp24()
-
-    test_width = 105
-    test_height = 101
+    '''
+    test_width = 1
+    test_height = 255
     test_byte = b''
     for i in range(test_height):
         test_byte += bytes([i])*(test_width*3)
     print("test_byte : ",len(test_byte))
-
-    bmp.create_24bmp(test_byte, map_row=test_height, map_column=test_width)
+    '''
+    #bmp.create_24bmp(test_byte, map_row=test_height, map_column=test_width)
+    test_byte = open('./sample/00cec16422b4d7b1a28a12ca04dc7f3c.exe', 'rb').read()
+    bmp.make(test_byte)
 
     '''
     test = bmp.block_create(test_byte, row=5, column=5)
