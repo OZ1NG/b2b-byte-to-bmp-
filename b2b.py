@@ -3,6 +3,7 @@
 from bmp24 import Bmp24
 from bmpGrayScale import BmpGrayScale
 import sys
+import os
 
 class Bmp:
     def __init__(self, PATH="./"):
