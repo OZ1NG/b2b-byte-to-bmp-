@@ -36,3 +36,4 @@ if __name__ == "__main__":
         bmp.bmp24.make(file_data, bmp_file_name=f,output_path="./bi_train_0/")
         print("[%d/%d] Running... %s" %(count ,len(bmp.EXE_FILES), f), end='\r')
         count += 1
+    print("[+] Done")
