@@ -1,10 +1,8 @@
 #!/usr/bin/python3
-import sys
 import os
 import struct
 import numpy as np
 from PIL import Image
-import math
 
 def padding(index, length): # for test
     index = hex(index)[2:]
@@ -90,6 +88,9 @@ class Bmp24:
         # padding flag : 패딩이 된 경우 True
         self.padding_flag = False
 
+    def set_bmp_file_name(self, BMP_FILE_NAME="result.bmp"):
+        self.BMP_FILE_NAME = BMP_FILE_NAME
+
     # map_line : 완성된 비트맵 이미지의 한줄의 픽셀 개수(정사각형으로 고정), 만약 가로 세로 길이를 따로 구하고 싶다면 map_line 부분을 수정하면된다.
     def create_24bmp(self, data, map_row=128, map_column=128, block_row=5, block_column=5): # TODO : mapline -> map column map row로 바꿀것
         self.padding_flag = False
@@ -103,10 +104,6 @@ class Bmp24:
         # bitmap header (14bit)        
         file_size = 0x35 + pixel_size # 0x35 : bfOffBits-1 == header size
         self.create_bitmapfileheader_header(file_size)
-
-        # save
-        self.save_bmp(bmp_file_name=self.BMP_FILE_NAME)
-        pass
 
     # TODO : 값이 없는 필드의 경우 예외 처리 과정 추가 필요
     def combine_data(self):
@@ -275,7 +272,7 @@ class Bmp24:
         print("init_width : ",width)
         return height, width
 
-    def make(self, file_data):
+    def make(self, file_data, bmp_file_name="result.bmp", path="./"):
         file_size = len(file_data) 
         print("file_size/3 : ",file_size/3)
         if(file_size % 3): # 3으로 떨어지지 않는 경우 3의 배수로 맞춰줌
@@ -291,9 +288,12 @@ class Bmp24:
             else:
                 block_side = height
         
+        self.set_bmp_file_name(BMP_FILE_NAME=bmp_file_name)
         self.create_24bmp(file_data, map_row=height, map_column=width, block_row=block_side, block_column=block_side)
-        self.image_resize()
-
+        self.save_bmp(bmp_file_name=bmp_file_name)
+        self.image_resize(bmp_file_name=bmp_file_name)
+        self.__init__(BMP_FILE_NAME=bmp_file_name, PATH=path)
+ 
 if __name__ == "__main__":
     bmp = Bmp24()
     '''
