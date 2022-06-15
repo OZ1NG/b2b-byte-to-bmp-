@@ -4,6 +4,7 @@ from bmp24 import Bmp24
 from bmpGrayScale import BmpGrayScale
 import sys
 import os
+import argparse
 
 class Bmp:
     def __init__(self, PATH="./"):
@@ -12,20 +13,19 @@ class Bmp:
         self.bmp24 = Bmp24(PATH=PATH)
         self.bmpGS = BmpGrayScale(PATH=PATH)
         
-    # 디렉토리의 파일 이름 전부 가져오기
-    def get_files_path(self, PATH="./"):
+    # 디렉토리의 file_type에 해당하는 파일 이름 전부 가져오기
+    def get_files_path(self, PATH="./", file_type=".exe"):
         # 현재 디렉토리에 존재하는 asm 파일 이름 확인
         files = os.listdir(PATH)
         for f in files:
-            if(".exe" in f[-4:]):
-                #self.EXE_FILES.append(PATH+'/'+f)
+            if(file_type in f[-len(file_type):]):
                 self.EXE_FILES.append(f)
 
         if(len(self.EXE_FILES)):
-            print("[+] exe files count : ", len(self.EXE_FILES))
+            print(f"[+] {file_type} files count : ", len(self.EXE_FILES))
         else:
-            # 파싱할 exe 파일이 없으므로 종료
-            print("[!] exe file doesn't exist!")
+            # 파싱할 파일이 없으므로 종료
+            print(f"[!] {file_type} file doesn't exist!")
             exit(0)
 
 if __name__ == "__main__":
