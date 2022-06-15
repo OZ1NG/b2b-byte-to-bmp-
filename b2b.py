@@ -28,6 +28,7 @@ class Bmp:
 
 if __name__ == "__main__":
     #path = "../It's_mine_My_precious/test_1"
+    # TODO : argparse 사용
     Type = sys.argv[1]
     path = sys.argv[2]
     resize_output_path = sys.argv[3]
