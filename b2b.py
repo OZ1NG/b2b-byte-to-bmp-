@@ -46,7 +46,7 @@ def argparse_init(): # ver4 new code
 
 def version():
     global __VERSION__
-    print("b2b(byte to bmp) ver.%1f" %__VERSION__)
+    print("b2b(byte to bmp) ver.%.1f" %__VERSION__)
     print("Made by OZ1NG.")
 
 def argparse_init():
