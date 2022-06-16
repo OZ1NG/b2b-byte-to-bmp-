@@ -11,6 +11,8 @@ from PIL import Image
 '''
 class Bmp24:
     def __init__(self, PATH='./', BMP_FILE_NAME="result.bmp"):
+        self.__version__ = 1.0
+
         self.ASM_FILES = None
         self.PATH = PATH
         self.BMP_DATA = []
