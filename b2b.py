@@ -18,6 +18,7 @@ RESIZE_COL = 256
 
 class Bmp:
     def __init__(self, PATH="./"):
+        self.__version__ = 1.0
         self.EXE_FILES = []
         self.PATH = PATH
         self.bmp24 = Bmp24(PATH=PATH)
