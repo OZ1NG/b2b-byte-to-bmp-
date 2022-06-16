@@ -5,7 +5,7 @@
 ## [*] 기능
 
 - bmp24 : bmp24로 이미지를 만들어준다.
-- bmp gray scale : 추후 업데이트...
+- bmp gray scale : bmp GrayScale 이미지로 만들어준다.
 
-자세한건 추후에...
+TODO : 자세한건 추후에...
 
