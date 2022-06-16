@@ -51,7 +51,7 @@ def version():
     print("Made by OZ1NG.")
 
 def argparse_init():
-    parser = argparse.ArgumentParser(description='3Min Speech')
+    parser = argparse.ArgumentParser(description='b2b(Byte to BMP)')
     parser.add_argument('--type', '-t', help='Create bmp type : bmp24, grayscale', default=None)
     parser.add_argument('--path', '-p', help='Target byte files directory path.',  default=None)
     parser.add_argument('--resize_output_path', '-r', help='Set resize bmp output directory path.', default='./resize')
