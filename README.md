@@ -33,5 +33,6 @@ optional arguments:
   --version, -v         Show Version
 ```
 
-TODO : 더 자세한 내용은 추후에 노션으로 정리 예정
+## 추가 설명
+- [노션 링크](https://bead-sun-669.notion.site/B2B-Byte-to-BMP-2414073effe74f7785c0d0e2c008377a)
 
